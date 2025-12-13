@@ -7,10 +7,9 @@
 
 # Deep Learning & ML
 # ----------------------------------------------------------------------------
-tensorflow==2.13.0                # Core ML framework untuk RNN/LSTM/GRU
-keras==2.13.1                     # High-level neural networks API
+tensorflow==2.16.1                # Core ML framework untuk RNN/LSTM/GRU (upgraded for typing-extensions compatibility)
 scikit-learn==1.3.2               # Machine learning utilities & metrics
-numpy==1.24.3                     # Numerical computing
+numpy==1.26.4                     # Numerical computing (compatible with TF 2.16)
 pandas==2.1.3                     # Data manipulation
 
 # Audio Processing
