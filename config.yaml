@@ -1,0 +1,405 @@
+# ============================================================================
+# Configuration File - Gender Voice Detection MLOps
+# ============================================================================
+# Centralized configuration untuk semua modules
+# ============================================================================
+
+# ============================================================================
+# PROJECT METADATA
+# ============================================================================
+project:
+  name: "Gender Voice Detection"
+  version: "1.0.0"
+  description: "Deep Learning-based gender classification from voice using RNN/LSTM/GRU"
+  author: "Your Name"
+  license: "MIT"
+
+# ============================================================================
+# PATHS
+# ============================================================================
+paths:
+  # Data directories
+  data_dir: "data"
+  raw_data: "data/raw"
+  processed_data: "data/processed"
+  mfcc_data: "data/mfcc"
+  feedback_data: "data/feedback"
+  
+  # Model directories
+  model_dir: "models"
+  lstm_model: "models/lstm_production.h5"
+  gru_model: "models/gru_production.h5"
+  rnn_model: "models/rnn_production.h5"
+  
+  # Logs & Reports
+  log_dir: "logs"
+  report_dir: "reports"
+  
+  # MLflow
+  mlflow_tracking_uri: "mlruns"
+  mlflow_artifact_root: "mlartifacts"
+
+# ============================================================================
+# AUDIO PROCESSING PARAMETERS
+# ============================================================================
+audio:
+  # Preprocessing parameters (sesuai notebook Anda)
+  sample_rate: 16000          # Hz
+  duration: 3                 # seconds
+  target_db: -20.0            # RMS normalization target
+  
+  # MFCC parameters
+  n_mfcc: 13                  # Jumlah MFCC coefficients
+  n_fft: 2048                 # FFT window size
+  hop_length: 512             # Hop length untuk STFT
+  
+  # Noise reduction
+  noise_reduce_enabled: true
+  stationary: true
+  
+  # Supported formats
+  supported_formats:
+    - .wav
+    - .mp3
+    - .m4a
+    - .flac
+    - .opus
+
+# ============================================================================
+# MODEL ARCHITECTURE
+# ============================================================================
+models:
+  # Available models
+  available:
+    - rnn
+    - lstm
+    - gru
+  
+  default: "lstm"
+  
+  # RNN Configuration
+  rnn:
+    name: "SimpleRNN"
+    layers:
+      - type: "SimpleRNN"
+        units: 64
+        return_sequences: false
+      - type: "Dropout"
+        rate: 0.2
+      - type: "Dense"
+        units: 1
+        activation: "sigmoid"
+    
+  # LSTM Configuration
+  lstm:
+    name: "LSTM"
+    layers:
+      - type: "LSTM"
+        units: 64
+        return_sequences: false
+      - type: "Dropout"
+        rate: 0.2
+      - type: "Dense"
+        units: 1
+        activation: "sigmoid"
+  
+  # GRU Configuration
+  gru:
+    name: "GRU"
+    layers:
+      - type: "GRU"
+        units: 64
+        return_sequences: false
+      - type: "Dropout"
+        rate: 0.2
+      - type: "Dense"
+        units: 1
+        activation: "sigmoid"
+
+# ============================================================================
+# TRAINING HYPERPARAMETERS
+# ============================================================================
+training:
+  # Default hyperparameters
+  default:
+    epochs: 50
+    batch_size: 16
+    learning_rate: 0.001
+    dropout: 0.2
+    hidden_units: 64
+  
+  # Hyperparameter ranges (untuk UI tuning)
+  ranges:
+    epochs:
+      min: 10
+      max: 200
+      default: 50
+    batch_size:
+      options: [8, 16, 32, 64]
+      default: 16
+    learning_rate:
+      min: 0.0001
+      max: 0.01
+      default: 0.001
+    dropout:
+      min: 0.0
+      max: 0.5
+      default: 0.2
+    hidden_units:
+      options: [32, 64, 128, 256]
+      default: 64
+  
+  # Optimizer
+  optimizer: "adam"
+  loss: "binary_crossentropy"
+  metrics:
+    - "accuracy"
+  
+  # Callbacks
+  callbacks:
+    early_stopping:
+      enabled: true
+      monitor: "val_loss"
+      patience: 10
+      restore_best_weights: true
+    
+    reduce_lr:
+      enabled: true
+      monitor: "val_loss"
+      factor: 0.5
+      patience: 5
+      min_lr: 0.00001
+    
+    model_checkpoint:
+      enabled: true
+      monitor: "val_accuracy"
+      save_best_only: true
+
+# ============================================================================
+# DATASET CONFIGURATION
+# ============================================================================
+dataset:
+  # Train/Val/Test split
+  split:
+    train: 0.8
+    val: 0.1
+    test: 0.1
+  
+  # Random seed untuk reproducibility
+  random_seed: 42
+  
+  # Stratify (untuk balanced classes)
+  stratify: true
+  
+  # Class labels
+  classes:
+    0: "Laki-laki"
+    1: "Perempuan"
+  
+  # Data augmentation (optional)
+  augmentation:
+    enabled: false
+    techniques:
+      - time_stretch
+      - pitch_shift
+      - add_noise
+
+# ============================================================================
+# FEEDBACK & AUTO-RETRAIN
+# ============================================================================
+feedback:
+  # Auto-retrain settings
+  threshold: 20                    # Jumlah feedback untuk trigger retrain
+  auto_retrain_enabled: true       # Auto atau manual trigger only
+  
+  # Minimum metrics untuk auto-deploy model baru
+  min_accuracy: 0.85
+  min_f1_score: 0.80
+  
+  # Feedback storage
+  save_audio: true
+  save_metadata: true
+  metadata_format: "csv"           # csv or json
+
+# ============================================================================
+# API CONFIGURATION
+# ============================================================================
+api:
+  # Server settings
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  reload: false                    # Set true untuk development
+  
+  # CORS
+  cors_origins:
+    - "http://localhost:7860"
+    - "http://localhost:3000"
+    - "https://huggingface.co"
+  
+  # Upload limits
+  max_file_size: 10485760          # 10MB in bytes
+  
+  # Rate limiting
+  rate_limit:
+    enabled: false
+    requests_per_minute: 60
+  
+  # Authentication
+  jwt:
+    algorithm: "HS256"
+    access_token_expire_minutes: 30
+
+# ============================================================================
+# GRADIO UI CONFIGURATION
+# ============================================================================
+ui:
+  # Server settings
+  server_name: "0.0.0.0"
+  server_port: 7860
+  share: false                     # Set true untuk public URL (ngrok-like)
+  
+  # Theme
+  theme: "default"                 # default, soft, dark
+  
+  # Tab names (Bahasa Indonesia)
+  tabs:
+    - name: "🎤 Prediksi"
+      description: "Upload atau record audio untuk prediksi gender"
+    - name: "🔧 Parameter Tuning"
+      description: "Training model dengan custom hyperparameters"
+    - name: "👨‍💼 Admin Panel"
+      description: "Dashboard & management (password protected)"
+  
+  # Audio recorder settings
+  recorder:
+    duration: 3                    # seconds
+    sample_rate: 16000
+    channels: 1                    # mono
+  
+  # Visualization
+  plots:
+    mfcc_enabled: true
+    confidence_chart_enabled: true
+    confusion_matrix_enabled: true
+
+# ============================================================================
+# MLFLOW CONFIGURATION
+# ============================================================================
+mlflow:
+  # Experiment settings
+  experiment_name: "gender-voice-detection"
+  
+  # Auto-logging
+  autolog:
+    enabled: true
+    log_models: true
+    log_datasets: true
+    
+  # Tags untuk setiap run
+  default_tags:
+    project: "gender-voice-detection"
+    framework: "tensorflow"
+    task: "binary-classification"
+  
+  # Artifacts to log
+  artifacts:
+    - "confusion_matrix.png"
+    - "training_history.png"
+    - "classification_report.txt"
+    - "model_summary.txt"
+
+# ============================================================================
+# DVC CONFIGURATION
+# ============================================================================
+dvc:
+  # Remote storage
+  remote_name: "gdrive"
+  remote_type: "gdrive"
+  
+  # Cache directory
+  cache_dir: ".dvc/cache"
+  
+  # Files to track
+  tracked_paths:
+    - "data/raw"
+    - "data/processed"
+    - "data/mfcc"
+    - "models/*.h5"
+
+# ============================================================================
+# LOGGING CONFIGURATION
+# ============================================================================
+logging:
+  # Log level
+  level: "INFO"                    # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  
+  # Log format
+  format: "{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}"
+  
+  # File logging
+  file:
+    enabled: true
+    path: "logs/app.log"
+    rotation: "10 MB"
+    retention: "1 week"
+    compression: "zip"
+  
+  # Console logging
+  console:
+    enabled: true
+    colorize: true
+
+# ============================================================================
+# DEPLOYMENT CONFIGURATION
+# ============================================================================
+deployment:
+  # HuggingFace Spaces
+  huggingface:
+    space_name: "gender-voice-detection-id"
+    space_sdk: "gradio"
+    space_emoji: "🎤"
+    space_colorFrom: "blue"
+    space_colorTo: "purple"
+  
+  # Docker
+  docker:
+    image_name: "gender-voice-detection"
+    tag: "latest"
+    base_image: "python:3.9-slim"
+
+# ============================================================================
+# MONITORING & METRICS
+# ============================================================================
+monitoring:
+  # Enable metrics collection
+  enabled: true
+  
+  # Metrics to track
+  metrics:
+    - total_predictions
+    - prediction_latency
+    - model_accuracy
+    - feedback_count
+    - error_rate
+  
+  # Alerts
+  alerts:
+    accuracy_drop_threshold: 0.10  # Alert jika accuracy turun >10%
+    error_rate_threshold: 0.05      # Alert jika error rate >5%
+
+# ============================================================================
+# TESTING CONFIGURATION
+# ============================================================================
+testing:
+  # Test data paths
+  fixtures_dir: "tests/fixtures"
+  
+  # Coverage thresholds
+  coverage:
+    minimum: 80                    # Minimum 80% code coverage
+  
+  # Integration test settings
+  integration:
+    use_mock_mlflow: true
+    use_mock_dvc: true
