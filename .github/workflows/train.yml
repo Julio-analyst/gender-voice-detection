@@ -127,13 +127,14 @@ jobs:
           for dir in reports/*/; do
             if [ -f "${dir}metrics.json" ]; then
               echo "### $(basename $dir)" >> $GITHUB_STEP_SUMMARY
-              cat "${dir}metrics.json" | python -c "
+              python -c "
 import sys, json
-data = json.load(sys.stdin)
-print(f\"- **Accuracy:** {data.get('test_accuracy', 0)*100:.2f}%\")
-print(f\"- **Precision:** {data.get('test_precision', 0)*100:.2f}%\")
-print(f\"- **Recall:** {data.get('test_recall', 0)*100:.2f}%\")
-print(f\"- **F1-Score:** {data.get('test_f1', 0)*100:.2f}%\")
+with open('${dir}metrics.json') as f:
+    data = json.load(f)
+print('- **Accuracy:** {:.2f}%'.format(data.get('test_accuracy', 0)*100))
+print('- **Precision:** {:.2f}%'.format(data.get('test_precision', 0)*100))
+print('- **Recall:** {:.2f}%'.format(data.get('test_recall', 0)*100))
+print('- **F1-Score:** {:.2f}%'.format(data.get('test_f1', 0)*100))
               " >> $GITHUB_STEP_SUMMARY
               echo "" >> $GITHUB_STEP_SUMMARY
             fi
