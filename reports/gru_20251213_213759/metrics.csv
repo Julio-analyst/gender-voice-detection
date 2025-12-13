@@ -1,0 +1,2 @@
+model_type,timestamp,accuracy,precision,recall,f1_score,true_negatives,false_positives,false_negatives,true_positives,auc
+gru,2025-12-13 21:38:00,0.6,0.6,0.3333333333333333,0.42857142857142855,9,2,6,3,0.494949494949495

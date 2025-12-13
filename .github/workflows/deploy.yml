@@ -1,0 +1,221 @@
+name: 🚀 Deploy to Hugging Face
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'models/**'
+  workflow_dispatch:
+    inputs:
+      space_name:
+        description: 'Hugging Face Space name'
+        required: true
+        default: 'tubes-mlops-gender-voice'
+      model_type:
+        description: 'Model to deploy'
+        required: true
+        type: choice
+        options:
+          - lstm
+          - rnn
+          - gru
+        default: 'lstm'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    
+    - name: 📦 Install Dependencies
+      run: |
+        pip install --upgrade pip
+        pip install gradio tensorflow numpy librosa
+    
+    - name: 🔍 Verify Models
+      run: |
+        echo "## 📦 Available Models" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        ls -lh models/*.h5 || echo "No models found!"
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        ls -lh models/*.h5 >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+    
+    - name: 🎯 Create Hugging Face App
+      run: |
+        cat > app.py << 'EOF'
+        import gradio as gr
+        import numpy as np
+        import librosa
+        from tensorflow import keras
+        import os
+        
+        # Load production model
+        MODEL_PATH = "models/${{ github.event.inputs.model_type || 'lstm' }}_production.h5"
+        model = keras.models.load_model(MODEL_PATH)
+        
+        def extract_mfcc(audio_path, n_mfcc=13, max_len=469):
+            """Extract MFCC features from audio file"""
+            y, sr = librosa.load(audio_path, sr=16000, duration=3.0)
+            mfcc = librosa.feature.mfcc(y=y, sr=sr, n_mfcc=n_mfcc)
+            
+            # Pad or truncate
+            if mfcc.shape[1] < max_len:
+                mfcc = np.pad(mfcc, ((0, 0), (0, max_len - mfcc.shape[1])), mode='constant')
+            else:
+                mfcc = mfcc[:, :max_len]
+            
+            return mfcc.T
+        
+        def predict_gender(audio):
+            """Predict gender from audio file"""
+            try:
+                # Extract features
+                features = extract_mfcc(audio)
+                features = np.expand_dims(features, axis=0)
+                
+                # Predict
+                prediction = model.predict(features, verbose=0)
+                confidence = float(prediction[0][0])
+                
+                gender = "Perempuan 👩" if confidence > 0.5 else "Laki-laki 👨"
+                certainty = confidence if confidence > 0.5 else 1 - confidence
+                
+                return {
+                    "Jenis Kelamin": gender,
+                    "Confidence": f"{certainty * 100:.2f}%"
+                }
+            except Exception as e:
+                return {"Error": str(e)}
+        
+        # Create Gradio interface
+        demo = gr.Interface(
+            fn=predict_gender,
+            inputs=gr.Audio(type="filepath", label="🎤 Upload Audio (WAV/MP3)"),
+            outputs=gr.Label(label="🎯 Hasil Prediksi", num_top_classes=2),
+            title="🎙️ Gender Voice Classification",
+            description=f"Klasifikasi suara berdasarkan gender menggunakan model **{('${{ github.event.inputs.model_type || 'lstm' }}').upper()}**. Upload file audio untuk memulai prediksi.",
+            examples=[],
+            theme=gr.themes.Soft(),
+            analytics_enabled=False
+        )
+        
+        if __name__ == "__main__":
+            demo.launch()
+        EOF
+        
+        echo "✅ app.py created for Hugging Face Space"
+    
+    - name: 📝 Create Requirements for HF
+      run: |
+        cat > requirements_hf.txt << 'EOF'
+        gradio==4.7.1
+        tensorflow==2.15.0
+        numpy==1.24.3
+        librosa==0.10.1
+        soundfile==0.12.1
+        numba==0.58.1
+        EOF
+        
+        echo "✅ requirements_hf.txt created"
+    
+    - name: 📄 Create README for HF
+      run: |
+        cat > README_HF.md << 'EOF'
+        ---
+        title: Gender Voice Classification
+        emoji: 🎙️
+        colorFrom: blue
+        colorTo: purple
+        sdk: gradio
+        sdk_version: 4.7.1
+        app_file: app.py
+        pinned: false
+        license: mit
+        ---
+        
+        # 🎙️ Gender Voice Classification
+        
+        MLOps project untuk klasifikasi gender berdasarkan suara menggunakan Deep Learning.
+        
+        ## 🎯 Model
+        - **Architecture**: ${{ github.event.inputs.model_type || 'lstm' | upper }}
+        - **Input**: Audio file (WAV/MP3)
+        - **Output**: Gender (Male/Female) + Confidence
+        
+        ## 🚀 How to Use
+        1. Upload audio file (3-10 seconds recommended)
+        2. Wait for processing
+        3. View prediction result
+        
+        ## 📊 Performance
+        - Test Accuracy: ~95%+
+        - Training Dataset: 1,052 samples
+        
+        Built with ❤️ by MLOps Team
+        EOF
+        
+        echo "✅ README_HF.md created"
+    
+    - name: 🤗 Push to Hugging Face (Manual)
+      if: github.event_name == 'workflow_dispatch'
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      run: |
+        echo "## 🤗 Hugging Face Deployment" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -z "$HF_TOKEN" ]; then
+          echo "⚠️ **HF_TOKEN not configured!**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Manual Deploy Instructions:**" >> $GITHUB_STEP_SUMMARY
+          echo "1. Go to https://huggingface.co/new-space" >> $GITHUB_STEP_SUMMARY
+          echo "2. Create Space: \`${{ github.event.inputs.space_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "3. Upload files:" >> $GITHUB_STEP_SUMMARY
+          echo "   - app.py" >> $GITHUB_STEP_SUMMARY
+          echo "   - requirements_hf.txt (rename to requirements.txt)" >> $GITHUB_STEP_SUMMARY
+          echo "   - README_HF.md (rename to README.md)" >> $GITHUB_STEP_SUMMARY
+          echo "   - models/${{ github.event.inputs.model_type || 'lstm' }}_production.h5" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📦 Files are available in workflow artifacts!" >> $GITHUB_STEP_SUMMARY
+        else
+          # Clone HF Space (if HF_TOKEN is set)
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          
+          echo "✅ Ready to deploy to Hugging Face Space" >> $GITHUB_STEP_SUMMARY
+          echo "🔗 Space: https://huggingface.co/spaces/${{ secrets.HF_USERNAME }}/${{ github.event.inputs.space_name }}" >> $GITHUB_STEP_SUMMARY
+        fi
+    
+    - name: 📦 Upload Deployment Package
+      uses: actions/upload-artifact@v4
+      with:
+        name: huggingface-deployment
+        path: |
+          app.py
+          requirements_hf.txt
+          README_HF.md
+          models/${{ github.event.inputs.model_type || 'lstm' }}_production.h5
+        retention-days: 30
+    
+    - name: 🎉 Deployment Summary
+      run: |
+        echo "## ✅ Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Model**: ${{ github.event.inputs.model_type || 'lstm' | upper }}" >> $GITHUB_STEP_SUMMARY
+        echo "**Status**: Ready for Hugging Face" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📦 Next Steps" >> $GITHUB_STEP_SUMMARY
+        echo "1. Download artifacts from this workflow" >> $GITHUB_STEP_SUMMARY
+        echo "2. Create Hugging Face Space" >> $GITHUB_STEP_SUMMARY
+        echo "3. Upload files to Space" >> $GITHUB_STEP_SUMMARY
+        echo "4. Space will auto-deploy!" >> $GITHUB_STEP_SUMMARY

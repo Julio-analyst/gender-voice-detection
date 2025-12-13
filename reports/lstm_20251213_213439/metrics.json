@@ -1,0 +1,15 @@
+{
+  "model_type": "lstm",
+  "timestamp": "2025-12-13T21:34:39.919290",
+  "metrics": {
+    "accuracy": 0.5,
+    "precision": 0.5833333333333334,
+    "recall": 0.5833333333333334,
+    "f1_score": 0.5833333333333334,
+    "true_negatives": 3,
+    "false_positives": 5,
+    "false_negatives": 5,
+    "true_positives": 7,
+    "auc": 0.4479166666666667
+  }
+}

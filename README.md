@@ -8,6 +8,13 @@
 [![Gradio](https://img.shields.io/badge/Gradio-4.7-yellow.svg)](https://gradio.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+<!-- GitHub Actions Badges -->
+[![Lint](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/lint.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/lint.yml)
+[![Tests](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/test.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/test.yml)
+[![Training](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/train.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/train.yml)
+[![Deploy](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/deploy.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/deploy.yml)
+[![codecov](https://codecov.io/gh/YOUR_USERNAME/YOUR_REPO/branch/main/graph/badge.svg)](https://codecov.io/gh/YOUR_USERNAME/YOUR_REPO)
+
 > **Platform MLOps lengkap untuk deteksi gender dari suara menggunakan Deep Learning (RNN, LSTM, GRU) dengan pipeline CI/CD otomatis, experiment tracking, data versioning, dan deployment ke production.**
 
 ---
@@ -36,11 +43,12 @@ Project ini adalah implementasi **full-stack MLOps pipeline** untuk deteksi gend
 
 - ✅ **3 Model Deep Learning**: RNN, LSTM, GRU (user bisa pilih)
 - ✅ **Interactive UI**: Gradio-based web interface dengan audio recording
+- ✅ **Admin Dashboard**: Manual training controls & feedback management
 - ✅ **REST API**: FastAPI backend untuk integration
 - ✅ **Experiment Tracking**: MLflow integration dengan DagsHub
 - ✅ **Data Versioning**: DVC dengan Google Drive storage (2TB)
 - ✅ **Auto-Retrain**: Feedback loop dengan automatic retraining
-- ✅ **CI/CD Pipeline**: GitHub Actions untuk testing & deployment
+- ✅ **CI/CD Pipeline**: 4 GitHub Actions workflows (Lint, Test, Train, Deploy)
 - ✅ **Production Ready**: Deployed ke HuggingFace Spaces
 
 ---
@@ -54,21 +62,21 @@ Project ini adalah implementasi **full-stack MLOps pipeline** untuk deteksi gend
 - **Real-time Prediction**: Hasil instant dengan confidence score
 - **Visualization**: MFCC features & confidence charts
 - **Feedback System**: Koreksi prediksi untuk improve model
+- **Prediction History**: Semua prediksi auto-record ke CSV
 
-### 🔧 **Parameter Tuning**
-- **Custom Hyperparameters**: Epochs, batch size, learning rate, dropout, hidden units
-- **Live Training Dashboard**: Progress bar & real-time metrics
-- **Model Comparison**: Benchmark 3 models sekaligus
-- **Export Reports**: PDF/CSV training results
-
-### 👨‍💼 **Admin Panel**
-- **Dashboard Metrics**: Total predictions, feedback count, accuracy
-- **Auto-Retrain Config**: Set threshold (default: 20 feedback)
-- **Manual Trigger**: Force retrain anytime
-- **Feedback Queue**: View & manage user corrections
-- **MLflow Integration**: Direct access ke experiments
+### 🔧 **Admin Dashboard**
+- **Manual Training**: Custom epochs, learning rate, batch size
+- **Feedback Management**: View, export, clear feedback data
+- **Model Comparison**: Performance metrics untuk semua model
+- **System Info**: Dataset stats, model info, last training time
+- **Backup System**: Auto-backup sebelum clear feedback
 
 ### 🤖 **MLOps Features**
+- **GitHub Actions CI/CD**: 4 automated workflows
+  - 🎨 **Lint**: Code quality (Black, Flake8, isort, MyPy)
+  - 🧪 **Test**: Multi-OS/Python testing with coverage
+  - 🎓 **Train**: Auto-training on data updates + manual dispatch
+  - 🚀 **Deploy**: Hugging Face deployment automation
 - **Experiment Tracking**: All training runs logged ke MLflow
 - **Model Versioning**: Automatic versioning & registry
 - **Data Pipeline**: DVC-tracked preprocessing & MFCC extraction

@@ -1,0 +1,60 @@
+name: 🎨 Code Quality & Lint
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+    
+    - name: 🐍 Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+        cache: 'pip'
+    
+    - name: 📦 Install Linters
+      run: |
+        pip install flake8 black isort mypy
+    
+    - name: 🎨 Check Code Formatting (Black)
+      run: |
+        black --check src/ tests/ *.py || echo "::warning::Code formatting issues found. Run 'black src/ tests/ *.py' to fix."
+      continue-on-error: true
+    
+    - name: 📐 Check Import Sorting (isort)
+      run: |
+        isort --check-only src/ tests/ *.py || echo "::warning::Import sorting issues found. Run 'isort src/ tests/ *.py' to fix."
+      continue-on-error: true
+    
+    - name: 🔍 Lint with Flake8
+      run: |
+        # Stop the build if there are Python syntax errors or undefined names
+        flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        # Exit-zero treats all errors as warnings
+        flake8 src/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    
+    - name: 🏷️ Type Check (MyPy)
+      run: |
+        mypy src/ --ignore-missing-imports || echo "::warning::Type checking issues found."
+      continue-on-error: true
+    
+    - name: 📊 Lint Summary
+      if: always()
+      run: |
+        echo "## 🎨 Code Quality Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "✅ Linting completed!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Recommendations:**" >> $GITHUB_STEP_SUMMARY
+        echo "- Run \`black src/ tests/ *.py\` to format code" >> $GITHUB_STEP_SUMMARY
+        echo "- Run \`isort src/ tests/ *.py\` to sort imports" >> $GITHUB_STEP_SUMMARY
+        echo "- Fix flake8 warnings for better code quality" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,186 @@
+name: 🚂 Auto-Training Pipeline
+
+on:
+  # Trigger on data updates
+  push:
+    paths:
+      - 'data/raw_wav/**'
+      - 'data/processed/**'
+    branches:
+      - main
+  
+  # Manual trigger with parameters
+  workflow_dispatch:
+    inputs:
+      model_type:
+        description: 'Model to train (LSTM/RNN/GRU/ALL)'
+        required: true
+        default: 'ALL'
+        type: choice
+        options:
+          - LSTM
+          - RNN
+          - GRU
+          - ALL
+      epochs:
+        description: 'Number of epochs'
+        required: true
+        default: '50'
+        type: string
+      batch_size:
+        description: 'Batch size'
+        required: false
+        default: '32'
+        type: string
+      learning_rate:
+        description: 'Learning rate'
+        required: false
+        default: '0.001'
+        type: string
+      use_feedback:
+        description: 'Include feedback data'
+        required: false
+        default: false
+        type: boolean
+  
+  # Weekly scheduled training
+  schedule:
+    - cron: '0 0 * * 0'  # Every Sunday at midnight UTC
+
+jobs:
+  train-models:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        python-version: ['3.10']
+    
+    steps:
+    - name: 📥 Checkout Code
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: 🐍 Setup Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+    
+    - name: 📦 Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest flake8
+    
+    - name: 📊 Check Dataset
+      run: |
+        echo "Checking dataset availability..."
+        if [ -d "data/processed" ]; then
+          echo "✅ Processed data found"
+          ls -lh data/processed/
+        else
+          echo "❌ No processed data - need to run preprocessing first"
+          exit 1
+        fi
+    
+    - name: 🚂 Train LSTM Model
+      if: ${{ github.event.inputs.model_type == 'LSTM' || github.event.inputs.model_type == 'ALL' || github.event_name != 'workflow_dispatch' }}
+      run: |
+        python src/training/train.py \
+          --model-type lstm \
+          --epochs ${{ github.event.inputs.epochs || '50' }} \
+          --batch-size ${{ github.event.inputs.batch_size || '32' }} \
+          --use-processed
+      env:
+        PYTHONIOENCODING: utf-8
+    
+    - name: 🔄 Train RNN Model
+      if: ${{ github.event.inputs.model_type == 'RNN' || github.event.inputs.model_type == 'ALL' || github.event_name != 'workflow_dispatch' }}
+      run: |
+        python src/training/train.py \
+          --model-type rnn \
+          --epochs ${{ github.event.inputs.epochs || '50' }} \
+          --batch-size ${{ github.event.inputs.batch_size || '32' }} \
+          --use-processed
+      env:
+        PYTHONIOENCODING: utf-8
+    
+    - name: ⚡ Train GRU Model
+      if: ${{ github.event.inputs.model_type == 'GRU' || github.event.inputs.model_type == 'ALL' || github.event_name != 'workflow_dispatch' }}
+      run: |
+        python src/training/train.py \
+          --model-type gru \
+          --epochs ${{ github.event.inputs.epochs || '50' }} \
+          --batch-size ${{ github.event.inputs.batch_size || '32' }} \
+          --use-processed
+      env:
+        PYTHONIOENCODING: utf-8
+    
+    - name: 📊 Generate Training Report
+      if: always()
+      run: |
+        echo "## 📊 Training Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -d "reports" ]; then
+          for dir in reports/*/; do
+            if [ -f "${dir}metrics.json" ]; then
+              echo "### $(basename $dir)" >> $GITHUB_STEP_SUMMARY
+              cat "${dir}metrics.json" | python -c "
+import sys, json
+data = json.load(sys.stdin)
+print(f\"- **Accuracy:** {data.get('test_accuracy', 0)*100:.2f}%\")
+print(f\"- **Precision:** {data.get('test_precision', 0)*100:.2f}%\")
+print(f\"- **Recall:** {data.get('test_recall', 0)*100:.2f}%\")
+print(f\"- **F1-Score:** {data.get('test_f1', 0)*100:.2f}%\")
+              " >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+            fi
+          done
+        fi
+    
+    - name: 📤 Upload Model Artifacts
+      uses: actions/upload-artifact@v4
+      if: success()
+      with:
+        name: trained-models-${{ github.run_number }}
+        path: |
+          models/*.h5
+          reports/
+        retention-days: 30
+    
+    - name: 📤 Upload to DagsHub (Optional)
+      if: ${{ secrets.DAGSHUB_TOKEN != '' }}
+      run: |
+        echo "Uploading metrics to DagsHub..."
+        # Add DagsHub upload logic here
+      env:
+        DAGSHUB_TOKEN: ${{ secrets.DAGSHUB_TOKEN }}
+        DAGSHUB_URI: ${{ secrets.DAGSHUB_URI }}
+    
+    - name: 💬 Comment on PR
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const reports = fs.readdirSync('reports');
+          let comment = '## 🚂 Training Results\n\n';
+          comment += '| Model | Accuracy | Precision | Recall | F1-Score |\n';
+          comment += '|-------|----------|-----------|--------|----------|\n';
+          
+          for (const report of reports) {
+            const metricsPath = `reports/${report}/metrics.json`;
+            if (fs.existsSync(metricsPath)) {
+              const metrics = JSON.parse(fs.readFileSync(metricsPath));
+              comment += `| ${report.split('_')[0].toUpperCase()} | ${(metrics.test_accuracy*100).toFixed(2)}% | ${(metrics.test_precision*100).toFixed(2)}% | ${(metrics.test_recall*100).toFixed(2)}% | ${(metrics.test_f1*100).toFixed(2)}% |\n`;
+            }
+          }
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
