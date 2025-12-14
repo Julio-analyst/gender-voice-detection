@@ -502,20 +502,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 🙏 Acknowledgments
-
-- Dataset: [Common Voice / Custom Dataset]
-- Inspired by: [Paper/Research reference jika ada]
-- Built with: TensorFlow, FastAPI, Gradio, MLflow, DVC
-
----
-
-## 📞 Support
-
-Untuk pertanyaan atau bantuan:
-- GitHub Issues: [Create issue](https://github.com/[username]/gender-voice-detection/issues)
-- Email: [your-email@example.com]
-
----
-
 **⭐ Star project ini jika bermanfaat!**
