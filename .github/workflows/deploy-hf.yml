@@ -1,0 +1,134 @@
+name: Deploy to Hugging Face
+
+on:
+  workflow_dispatch:
+    inputs:
+      space_name:
+        description: 'Hugging Face Space name'
+        required: true
+        default: 'gender-voice-detection'
+      model_type:
+        description: 'Model to deploy (for testing specific model)'
+        required: false
+        type: choice
+        options:
+          - all
+          - lstm
+          - rnn
+          - gru
+        default: 'all'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        lfs: true
+    
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+    
+    - name: Verify Models Exist
+      run: |
+        echo "## Available Models" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        ls -lh models/*.h5 || echo "⚠️ No models found!"
+        ls -lh models/*.h5 >> $GITHUB_STEP_SUMMARY || true
+        echo '```' >> $GITHUB_STEP_SUMMARY
+    
+    - name: Setup Hugging Face CLI
+      if: ${{ secrets.HF_TOKEN != '' }}
+      run: |
+        pip install huggingface_hub
+        huggingface-cli login --token ${{ secrets.HF_TOKEN }}
+    
+    - name: Create Deployment Package
+      run: |
+        echo "📦 Creating deployment package..."
+        
+        # Create deployment directory
+        mkdir -p hf_deploy
+        
+        # Copy essential files
+        cp app.py hf_deploy/
+        cp requirements_hf.txt hf_deploy/requirements.txt
+        cp README_HF.md hf_deploy/README.md
+        cp config.yaml hf_deploy/
+        
+        # Copy models
+        mkdir -p hf_deploy/models
+        cp models/*_production.h5 hf_deploy/models/ || echo "⚠️ Some models missing"
+        
+        # Copy source code
+        cp -r src/ hf_deploy/src/
+        
+        # Create feedback directory
+        mkdir -p hf_deploy/data/feedback
+        
+        echo "✅ Deployment package created"
+        ls -la hf_deploy/
+    
+    - name: Deploy to Hugging Face Space
+      if: ${{ secrets.HF_TOKEN != '' }}
+      env:
+        HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        HF_USERNAME: ${{ secrets.HF_USERNAME }}
+      run: |
+        cd hf_deploy
+        
+        SPACE_NAME="${{ github.event.inputs.space_name }}"
+        
+        echo "🚀 Deploying to Hugging Face Space: $HF_USERNAME/$SPACE_NAME"
+        
+        # Initialize git repo
+        git init
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        
+        # Add all files
+        git add .
+        git commit -m "Deploy from GitHub Actions - $(date +'%Y-%m-%d %H:%M:%S')"
+        
+        # Push to Hugging Face
+        git remote add hf https://huggingface.co/spaces/$HF_USERNAME/$SPACE_NAME
+        git push --force hf main || {
+          echo "⚠️ First time deploy, creating space..."
+          huggingface-cli repo create $SPACE_NAME --type space --space_sdk gradio
+          git push --force hf main
+        }
+        
+        echo "✅ Deployed successfully!"
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "## 🎉 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Space URL**: https://huggingface.co/spaces/$HF_USERNAME/$SPACE_NAME" >> $GITHUB_STEP_SUMMARY
+    
+    - name: Upload Deployment Artifact (Manual Deploy)
+      if: ${{ secrets.HF_TOKEN == '' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: huggingface-deployment-${{ github.run_number }}
+        path: hf_deploy/
+        retention-days: 30
+    
+    - name: Manual Deploy Instructions
+      if: ${{ secrets.HF_TOKEN == '' }}
+      run: |
+        echo "## 📦 Manual Deployment Required" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "No HF_TOKEN found. Download the artifact and deploy manually:" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "1. Download deployment artifact from this workflow" >> $GITHUB_STEP_SUMMARY
+        echo "2. Create new Hugging Face Space (Gradio SDK)" >> $GITHUB_STEP_SUMMARY
+        echo "3. Upload all files from artifact" >> $GITHUB_STEP_SUMMARY
+        echo "4. Space will auto-deploy!" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### Required Secrets (for auto-deploy)" >> $GITHUB_STEP_SUMMARY
+        echo "- \`HF_TOKEN\`: Your Hugging Face token" >> $GITHUB_STEP_SUMMARY
+        echo "- \`HF_USERNAME\`: Your Hugging Face username" >> $GITHUB_STEP_SUMMARY

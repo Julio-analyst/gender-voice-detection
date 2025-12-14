@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # Gradio UI
+  gradio-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gender-voice-ui
+    ports:
+      - "7860:7860"
+    volumes:
+      # Mount feedback data for persistence
+      - ./data/feedback:/app/data/feedback
+      - ./logs:/app/logs
+    environment:
+      - GRADIO_SERVER_NAME=0.0.0.0
+      - GRADIO_SERVER_PORT=7860
+    restart: unless-stopped
+    networks:
+      - mlops-network
+
+  # Admin Dashboard (optional)
+  admin-dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: gender-voice-admin
+    ports:
+      - "7861:7861"
+    volumes:
+      - ./data/feedback:/app/data/feedback
+      - ./models:/app/models
+      - ./reports:/app/reports
+    environment:
+      - GRADIO_SERVER_NAME=0.0.0.0
+      - GRADIO_SERVER_PORT=7861
+    command: python admin_dashboard.py
+    restart: unless-stopped
+    networks:
+      - mlops-network
+
+networks:
+  mlops-network:
+    driver: bridge

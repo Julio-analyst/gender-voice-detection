@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.egg-info/
+
+# Git
+.git/
+.github/
+.gitignore
+.gitattributes
+
+# Data (exclude large files, keep structure)
+data/raw/
+data/raw_wav/
+data/processed/*.npy
+data/mfcc/
+
+# Logs and temp
+logs/
+*.log
+*.tmp
+.pytest_cache/
+.coverage
+
+# Documentation
+docs/
+*.md
+!README.md
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Training outputs (exclude old reports)
+reports/
+notebooks/
+
+# Test files
+tests/
+test-*.ps1
+
+# Environment files
+.env
+.env.example
+
+# Scripts
+setup_dagshub.py
+check_latest_run.py
+launch.py
+admin_dashboard.py
