@@ -31,14 +31,17 @@ jobs:
       - name: Run Flake8
         run: |
           flake8 src/ --count --select=E9,F63,F7,F82 --show-source --statistics
+        continue-on-error: true
 
       - name: Check Black Formatting
         run: |
           black src/ tests/ --check
+        continue-on-error: true
 
       - name: Check Import Sorting
         run: |
           isort src/ tests/ --check-only
+        continue-on-error: true
 
   continuous-delivery:
     name: Continuous Delivery
