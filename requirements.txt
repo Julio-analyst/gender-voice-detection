@@ -17,6 +17,7 @@ pandas==2.1.3                     # Data manipulation
 librosa==0.10.1                   # Audio analysis & feature extraction
 soundfile==0.12.1                 # Audio file I/O
 noisereduce==3.0.0                # Noise reduction preprocessing
+torch==2.0.1                      # PyTorch (required by noisereduce)
 pydub==0.25.1                     # Audio manipulation & conversion
 
 # Web Framework & API

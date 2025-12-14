@@ -307,7 +307,7 @@ if __name__ == "__main__":
     os.environ['GRADIO_ANALYTICS_ENABLED'] = 'False'
     
     demo.launch(
-        server_name="127.0.0.1",
+        server_name="0.0.0.0",  # Bind to all interfaces for Docker compatibility
         server_port=7860,
         share=False,
         show_error=True,
