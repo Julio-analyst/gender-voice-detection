@@ -8,13 +8,6 @@
 [![Gradio](https://img.shields.io/badge/Gradio-4.7-yellow.svg)](https://gradio.app/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-<!-- GitHub Actions Badges -->
-[![Lint](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/lint.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/lint.yml)
-[![Tests](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/test.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/test.yml)
-[![Training](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/train.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/train.yml)
-[![Deploy](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/deploy.yml/badge.svg)](https://github.com/YOUR_USERNAME/YOUR_REPO/actions/workflows/deploy.yml)
-[![codecov](https://codecov.io/gh/YOUR_USERNAME/YOUR_REPO/branch/main/graph/badge.svg)](https://codecov.io/gh/YOUR_USERNAME/YOUR_REPO)
-
 > **Platform MLOps lengkap untuk deteksi gender dari suara menggunakan Deep Learning (RNN, LSTM, GRU) dengan pipeline CI/CD otomatis, experiment tracking, data versioning, dan deployment ke production.**
 
 ---
@@ -499,22 +492,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👥 Authors
 
 - **[Your Name]** - *Initial work* - [GitHub](https://github.com/[username])
-
----
-
-## 🙏 Acknowledgments
-
-- Dataset: [Common Voice / Custom Dataset]
-- Inspired by: [Paper/Research reference jika ada]
-- Built with: TensorFlow, FastAPI, Gradio, MLflow, DVC
-
----
-
-## 📞 Support
-
-Untuk pertanyaan atau bantuan:
-- GitHub Issues: [Create issue](https://github.com/[username]/gender-voice-detection/issues)
-- Email: [your-email@example.com]
 
 ---
 
