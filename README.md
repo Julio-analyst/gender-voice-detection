@@ -12,6 +12,9 @@
 
 ---
 
+## 🧠 ML Canvas
+<p align="center"> <img src="gambar/mlcanvas.png" alt="ML Canvas Gender Voice Detection" width="850"/> </p>
+
 ## 📋 Daftar Isi
 
 - [Overview](#-overview)
