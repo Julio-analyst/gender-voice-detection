@@ -35,9 +35,9 @@ paths:
   log_dir: "logs"
   report_dir: "reports"
   
-  # MLflow
-  mlflow_tracking_uri: "mlruns"
-  mlflow_artifact_root: "mlartifacts"
+  # Local MLflow (for testing only - production uses DagsHub)
+  mlflow_local_dir: "mlruns"
+  mlflow_artifact_local: "mlartifacts"
 
 # ============================================================================
 # AUDIO PROCESSING PARAMETERS
@@ -284,9 +284,12 @@ ui:
     confusion_matrix_enabled: true
 
 # ============================================================================
-# MLFLOW CONFIGURATION
+# MLFLOW CONFIGURATION (DagsHub Integration)
 # ============================================================================
 mlflow:
+  # DagsHub MLflow Tracking
+  tracking_uri: "https://dagshub.com/Julio-analyst/gender-voice-detection.mlflow"
+  
   # Experiment settings
   experiment_name: "gender-voice-detection"
   
@@ -308,6 +311,16 @@ mlflow:
     - "training_history.png"
     - "classification_report.txt"
     - "model_summary.txt"
+
+# ============================================================================
+# DAGSHUB CONFIGURATION
+# ============================================================================
+dagshub:
+  enabled: true
+  repo_owner: "Julio-analyst"
+  repo_name: "gender-voice-detection"
+  # Credentials from environment variables:
+  # DAGSHUB_TOKEN or MLFLOW_TRACKING_USERNAME/MLFLOW_TRACKING_PASSWORD
 
 # ============================================================================
 # DVC CONFIGURATION

@@ -11,6 +11,8 @@ import numpy as np
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import pytest
+
 from src.preprocessing.audio_cleaner import AudioCleaner
 from src.preprocessing.feature_extractor import MFCCExtractor
 from src.training.evaluate import ModelEvaluator
@@ -58,15 +60,22 @@ def generate_dummy_audio_data(n_samples: int = 200) -> tuple:
     return X, y
 
 
-def test_single_model(model_type: str, X: np.ndarray, y: np.ndarray):
+@pytest.fixture
+def dummy_data():
+    """Generate dummy data for testing"""
+    return generate_dummy_audio_data(n_samples=200)
+
+
+@pytest.mark.parametrize("model_type", ["lstm", "rnn", "gru"])
+def test_single_model(model_type, dummy_data):
     """
     Test complete pipeline for a single model
 
     Args:
         model_type: Type of model ('rnn', 'lstm', 'gru')
-        X: Feature data
-        y: Labels
+        dummy_data: Fixture providing (X, y) test data
     """
+    X, y = dummy_data
     print(f"\n{'='*80}")
     print(f"Testing {model_type.upper()} Model Pipeline")
     print(f"{'='*80}")
