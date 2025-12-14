@@ -1,0 +1,14 @@
+{
+  "model_type": "lstm",
+  "best_params": {
+    "learning_rate": 0.0017339139862669144,
+    "batch_size": 64,
+    "epochs": 30,
+    "dropout_rate": 0.4010782562663151,
+    "units": 256,
+    "optimizer": "adam"
+  },
+  "best_val_accuracy": 1.0,
+  "n_trials": 5,
+  "tuning_date": "2025-12-14T21:40:34.921030"
+}

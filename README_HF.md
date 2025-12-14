@@ -4,8 +4,8 @@ emoji: 🎤
 colorFrom: blue
 colorTo: purple
 sdk: gradio
-sdk_version: 4.44.0
-app_file: app.py
+sdk_version: 4.7.1
+app_file: start_ui.py
 pinned: false
 license: mit
 ---
@@ -75,7 +75,7 @@ Deep Learning system untuk klasifikasi gender berdasarkan suara menggunakan LSTM
 
 ## 👥 Team
 
-Built with ❤️ by MLOps Team - Politeknik Statistika STIS
+Built by MLOps Team - Sains Data ITERA
 
 ## 📄 License
 

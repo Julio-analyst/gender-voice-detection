@@ -62,18 +62,22 @@ def get_feedback_stats():
         correct_count = 0
         accuracy = 0
     
+    # Calculate percentages safely
+    male_pct = (male_count/total*100) if total > 0 else 0
+    female_pct = (female_count/total*100) if total > 0 else 0
+    
     stats = f"""
-    📊 **Feedback Statistics**
-    
-    - **Total Feedback:** {total}
-    - **Male Corrections:** {male_count} ({male_count/total*100:.1f}% if total > 0 else 0)
-    - **Female Corrections:** {female_count} ({female_count/total*100:.1f}% if total > 0 else 0)
-    - **Correct Predictions:** {correct_count} ({accuracy:.1f}%)
-    - **Incorrect Predictions:** {total - correct_count}
-    - **Ready for Retrain:** {'✅ Yes' if total >= 20 else f'❌ No (need {20-total} more)'}
-    
-    **Model Performance from Feedback:**
-    """
+📊 **Feedback Statistics**
+
+- **Total Feedback:** {total}
+- **Male Corrections:** {male_count} ({male_pct:.1f}%)
+- **Female Corrections:** {female_count} ({female_pct:.1f}%)
+- **Correct Predictions:** {correct_count} ({accuracy:.1f}%)
+- **Incorrect Predictions:** {total - correct_count}
+- **Ready for Retrain:** {'✅ Yes' if total >= 20 else f'❌ No (need {20-total} more)'}
+
+**Model Performance from Feedback:**
+"""
     
     # Add per-model stats if available
     if 'model_used' in df.columns:
