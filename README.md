@@ -82,11 +82,9 @@ Project ini adalah implementasi **full-stack MLOps pipeline** untuk deteksi gend
 ---
 
 ## 🏗️ Arsitektur
-
+<p align="center"> <img src="assets/mlopsarch.png" alt="Gender Voice Detection MLOps Architecture" width="900"/> </p>
 ```
 
-<p align="center"> <img src="gambar/mlopsarch.png" alt="MLOPS Architecture" width="850"/> </p
----
 
 ## 🛠️ Tech Stack
 
