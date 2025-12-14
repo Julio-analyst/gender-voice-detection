@@ -494,8 +494,11 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👥 Authors
 
-- **[Your Name]** - *Initial work* - [GitHub](https://github.com/[username])
-
+- Deva Anjani Khayyuninafsyah
+- Raid Muhammad Naufal
+- Rayan Koemi Karuby
+- ⁠Patricia Leondrea Diajeng Putri
+- ⁠Farrel Julio Akbar
 ---
 
 **⭐ Star project ini jika bermanfaat!**
