@@ -1,0 +1,12 @@
+Classification Report - GRU Model
+Generated: 2025-12-14 13:25:03
+============================================================
+
+              precision    recall  f1-score   support
+
+   Laki-laki     0.6667    0.8889    0.7619         9
+   Perempuan     0.8750    0.6364    0.7368        11
+
+    accuracy                         0.7500        20
+   macro avg     0.7708    0.7626    0.7494        20
+weighted avg     0.7812    0.7500    0.7481        20

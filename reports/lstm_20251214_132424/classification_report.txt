@@ -1,0 +1,12 @@
+Classification Report - LSTM Model
+Generated: 2025-12-14 13:24:24
+============================================================
+
+              precision    recall  f1-score   support
+
+   Laki-laki     0.4444    0.3077    0.3636        13
+   Perempuan     0.1818    0.2857    0.2222         7
+
+    accuracy                         0.3000        20
+   macro avg     0.3131    0.2967    0.2929        20
+weighted avg     0.3525    0.3000    0.3141        20
